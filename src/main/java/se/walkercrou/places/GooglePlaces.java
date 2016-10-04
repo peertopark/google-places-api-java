@@ -59,6 +59,15 @@ public class GooglePlaces implements GooglePlacesInterface {
     public GooglePlaces(String apiKey, String characterEncoding) {
         this(apiKey, new DefaultRequestHandler(characterEncoding));
     }
+    
+    /**
+     * Change timeouts
+     * @param connectionTimeout
+     * @param socketTimeout 
+     */
+    public void changeTimeouts(int connectionTimeout, int socketTimeout) {
+        this.requestHandler = new DefaultRequestHandler(connectionTimeout, socketTimeout);
+    }
 
     private static String addExtraParams(String base, Param... extraParams) {
         for (Param param : extraParams)

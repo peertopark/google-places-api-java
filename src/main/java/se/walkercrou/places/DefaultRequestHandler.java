@@ -9,14 +9,41 @@ import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
+import org.apache.http.client.config.RequestConfig;
 
 public class DefaultRequestHandler implements RequestHandler {
     /**
      * The default and recommended character encoding.
      */
     public static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
-    private final HttpClient client = HttpClientBuilder.create().build();
+    private final HttpClient client;
     private String characterEncoding;
+    
+    private static final int DEFAULT_CONNECTION_TIMEOUT = -1;
+    private static final int DEFAULT_SOCKET_TIMEOUT = -1;
+
+    /**
+     * Creates a new handler with the specified character encoding and timeouts.
+     *
+     * @param characterEncoding
+     * @param connectionTimeout
+     * @param socketTimeout
+     */
+    public DefaultRequestHandler(String characterEncoding, int connectionTimeout, int socketTimeout) {
+        this.client = buildClient(connectionTimeout, socketTimeout);
+        this.characterEncoding = characterEncoding;
+    }
+    
+    
+    /**
+     * Creates a new handler with the specified timeouts and UTF-8 character encoding.
+     *
+     * @param connectionTimeout
+     * @param socketTimeout
+     */
+    public DefaultRequestHandler(int connectionTimeout, int socketTimeout) {
+        this(DEFAULT_CHARACTER_ENCODING, connectionTimeout, socketTimeout);
+    }
 
     /**
      * Creates a new handler with the specified character encoding.
@@ -24,7 +51,7 @@ public class DefaultRequestHandler implements RequestHandler {
      * @param characterEncoding to use
      */
     public DefaultRequestHandler(String characterEncoding) {
-        this.characterEncoding = characterEncoding;
+        this(characterEncoding, DEFAULT_CONNECTION_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
     }
 
     /**
@@ -95,5 +122,16 @@ public class DefaultRequestHandler implements RequestHandler {
         } finally {
             data.releaseConnection();
         }
+    }
+    
+    /**
+     * Build {@link HttpClient} with timeouts
+     * @param connectionTimeout Connection Timeout
+     * @param socketTimeout Socket Timeout
+     * @return {@link HttpClient}
+     */
+    private static HttpClient buildClient(int connectionTimeout, int socketTimeout) {
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(connectionTimeout).setConnectionRequestTimeout(connectionTimeout).setSocketTimeout(socketTimeout).build();
+        return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).build();
     }
 }
